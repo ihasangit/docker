@@ -1,0 +1,56 @@
+name: Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - master  # Trigger deployment when changes are pushed to the 'master' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the latest code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up SSH access for deployment
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          
+      # Step 3: Deploy and manage code on EC2
+      - name: Deploy to EC2
+        run: |
+          ssh ubuntu@54.227.208.98 << 'EOF'
+            # Welcome message
+            echo "Hey, welcome to my app! How can I assist you today?"
+
+            # Ensure the repo is present or clone it
+            if [ ! -d "/home/ubuntu/docker-todo" ]; then
+              git clone git@github.com:ihasangit/docker.git /home/ubuntu/docker-todo
+            fi
+
+            # Always pull the latest code before proceeding
+            cd /home/ubuntu/docker-todo
+            git pull origin master
+
+            # Ensure Docker has permission for the current user
+            sudo chmod 666 /var/run/docker.sock
+
+            # Rebuild the Docker image with the latest changes
+            sudo docker build -t my-todo-app .
+
+            # Stop and remove the old container if it's running
+            sudo docker stop my-todo-app || true
+            sudo docker rm my-todo-app || true
+
+            # Run the new container with updated code
+            sudo docker run -d -p 80:3000 --name my-todo-app my-todo-app
+
+            # Confirmation message
+            echo "Deployment completed successfully! Your app is up and running."
+          EOF
