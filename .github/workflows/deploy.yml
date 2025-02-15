@@ -36,7 +36,7 @@ jobs:
 
             # Always pull the latest code before proceeding
             cd /home/ubuntu/docker-todo
-            git pull origin master
+            git pull origin main
 
             # Ensure Docker has permission for the current user
             sudo chmod 666 /var/run/docker.sock
