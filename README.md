@@ -14,7 +14,7 @@ Open a terminal and clone this sample application.
 ```
  git clone https://github.com/dockersamples/todo-list-app
 ```
-
+##
 ## Run the app
 
 Navigate into the todo-list-app directory:
